@@ -1,5 +1,5 @@
 
-var THE_SERVER_API = '/backend/api.php';
+var THE_SERVER_API = '/backend/api.json';
 
 define('MapSymbol',[
     "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/Color"
@@ -21,7 +21,6 @@ define('MapSquare',[
 ], function(SimpleMarkerSymbol, SimpleFillSymbol, Color, Polygon, Graphic) {
         return function(position, travelTime, stepSize){
           var square = new Polygon([[position[0]+stepSize,position[1]+stepSize],[position[0]+stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]+stepSize]]);
-          console.dir(square)
           var symbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_DASHDOT, new Color([255,0,0], 2),new Color([255,255,0,0.25]));
         return new Graphic(square, symbol)
 }});
@@ -49,25 +48,29 @@ define('AppMap', [
 
 require([
     "esri/layers/FeatureLayer",
-    "esri/renderers/HeatmapRenderer", "esri/layers/CSVLayer",
+    "esri/renderers/HeatmapRenderer", "esri/layers/CSVLayer", "esri/layers/GraphicsLayer",
     "AppMap",
     "MapSquare",
     "dojo/domReady!"
   ],
   function (
     FeatureLayer,
-    HeatmapRenderer, CSVLayer,
+    HeatmapRenderer, CSVLayer, GraphicsLayer,
     AppMap, MapSquare) {
         var map = AppMap("mapDiv");
         var stepSize = 0.1;
+        var graphicsLayer = new GraphicsLayer();
+        map.addLayer(graphicsLayer);
 
-        var addLayer = function(data) {
+        var redrawGraphicsLayer = function(data) {
             var data_ = [[[0.1,0.1],1],[[0.2,0.2],2],[[0.3,0.3],3]]
+            graphicsLayer.clear()
             data_.forEach(function(travelTimeData) {
               var coords = travelTimeData[0]
               var travelTime = travelTimeData[1]
-              map.graphics.add(MapSquare(coords, travelTime,stepSize/2))
+              graphicsLayer.add(MapSquare(coords, travelTime,stepSize/2))
             });
+            graphicsLayer.redraw();
         }
 
         var callTheApi = function() {
@@ -80,7 +83,7 @@ require([
 
                 response.json().then(function(data) {
                     console.log("the api returned, ma");
-                    addLayer(data);
+                    redrawGraphicsLayer(data);
                     console.dir(data);
                 });
               }
