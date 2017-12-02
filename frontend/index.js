@@ -37,10 +37,14 @@ define('MapSquare',[
     "esri/geometry/Polygon",
     "esri/graphic"
 ], function(SimpleFillSymbol, Color, Polygon, Graphic) {
-        return function(position, travelTime, stepSize){
-          var square = new Polygon([[position[0]+stepSize,position[1]+stepSize],[position[0]+stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]+stepSize]]);
-          var symbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_DASHDOT, new Color([255,0,0], 2),new Color([255,255,0,0.25]));
-        return new Graphic(square, symbol)
+    return function(position, travelTime, stepSize, minTravelTime, maxTravelTime){
+      var n = Math.min(100*travelTime/maxTravelTime, 100)
+      var squareColor = new Color([(255 * n) / 100,(255 * (100 - n)) / 100,0])
+      var square = new Polygon([[position[0]+stepSize,position[1]+stepSize],[position[0]+stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]+stepSize]]);
+      var symbol = new SimpleFillSymbol();
+      symbol.setStyle(SimpleFillSymbol.STYLE_SOLID);
+      symbol.setColor(squareColor);
+      return new Graphic(square, symbol)
 }});
 
 
@@ -49,13 +53,17 @@ define('ComputeDistanceCostMatrix', ["MapSquare"],
         return function(coordinates, graphicsLayer) {
             var stepSize = STEP_SIZE;
             var redrawGraphicsLayer = function(data) {
-                var data_ = [[[0.1,0.1],1],[[0.2,0.2],2],[[0.3,0.3],3]]
                 graphicsLayer.clear()
-                data_.forEach(function(travelTimeData) {
+                var minTravelTime = 0;
+                var maxTravelTime = 0;
+                data.forEach(function(d){ // compute max
+                  if(d[1] > maxTravelTime) maxTravelTime = d[1]
+                });
+                data.forEach(function(travelTimeData) {
                     var coords = travelTimeData[0]
                     var travelTime = travelTimeData[1]
                     graphicsLayer.add(
-                        MapSquare(coords, travelTime, stepSize/2))
+                        MapSquare(coords, travelTime, stepSize/2, minTravelTime, maxTravelTime))
                 });
                 graphicsLayer.redraw();
             }
@@ -71,8 +79,11 @@ define('ComputeDistanceCostMatrix', ["MapSquare"],
 
                 response.json().then(function(data) {
                     console.log("the api returned, ma");
-                    redrawGraphicsLayer(data);
-                    console.dir(data);
+                    var coords = data.rows[0].elements.map(function(element, i) {
+                      var coord = [i/10,0];
+                      return [coord, element.duration.value]
+                    })
+                    redrawGraphicsLayer(coords);
                 });
               }
             )
