@@ -20,7 +20,7 @@ def home():
         return 'Hello ArcGIS'
 
 
-
+import Server.distance_matrix_calculator
 
 
 

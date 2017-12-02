@@ -2,6 +2,9 @@ from datetime import datetime
 import googlemaps
 gmaps = googlemaps.Client(key='AIzaSyB8HBULX1Kov_bhrDnhi9XrT8N0L3kjscw')
 
+
+@app.route('/calculate')
+
 def generate_tuples(centerTuple):
 	step=0.01
 	gridSize=(-5,5)
