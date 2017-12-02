@@ -47,31 +47,38 @@ require([
             return map;
         };
 
-        var heatmapFeatureLayerOptions = {
-            mode: FeatureLayer.MODE_SNAPSHOT,
-            outFields: [
-                "atmcond",
-                "numfatal",
-                "conszone",
-                "age",
-                "alcres",
-                "sex"
-            ]
-        };
+        var addLayer = function(map) {
+            var heatmapFeatureLayerOptions = {
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: [
+                    "atmcond",
+                    "numfatal",
+                    "conszone",
+                    "age",
+                    "alcres",
+                    "sex"
+                ]
+            };
+    
+            esriConfig.defaults.io.corsEnabledServers.push("earthquake.usgs.gov");
+            var csv = new CSVLayer("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.csv", {
+                //fields: [{name: "depth", type: "Number"}]
+            });
+    
+            var heatmapRenderer = new HeatmapRenderer({
+                colors: ["rgba(0, 0, 255, 0)","rgb(0, 0, 255)","rgb(255, 0, 255)", "rgb(255, 0, 0)"],
+                blurRadius: 12,
+                maxPixelIntensity: 250,
+                minPixelIntensity: 10,
+                field: 'mag'
+            });
+            csv.setRenderer(heatmapRenderer);
+            map.addLayer(csv);
+        }
 
-        esriConfig.defaults.io.corsEnabledServers.push("earthquake.usgs.gov");
-        var csv = new CSVLayer("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.csv", {
-            //fields: [{name: "depth", type: "Number"}]
-        });
-
-        var heatmapRenderer = new HeatmapRenderer({
-            colors: ["rgba(0, 0, 255, 0)","rgb(0, 0, 255)","rgb(255, 0, 255)", "rgb(255, 0, 0)"],
-            blurRadius: 12,
-            maxPixelIntensity: 250,
-            minPixelIntensity: 10,
-            field: 'mag'
-        });
         var map = init();
-        csv.setRenderer(heatmapRenderer);
-        map.addLayer(csv);
+
+        $('#somebtn').on('click', function() {
+            addLayer(map);
+        })       
   });
