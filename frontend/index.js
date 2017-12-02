@@ -1,53 +1,55 @@
-require([
-    "esri/InfoTemplate",
-    "esri/layers/FeatureLayer",
-    
-    "esri/map", "esri/graphic",
-    "esri/renderers/HeatmapRenderer", "esri/layers/CSVLayer",
-    "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/Color",
 
-    "esri/geometry/webMercatorUtils",
+var THE_SERVER_API = '/backend/api.php';
+
+define('MapSymbol',[
+    "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/Color"
+], function(SimpleMarkerSymbol, SimpleLineSymbol, Color) {
+        return new SimpleMarkerSymbol(
+            SimpleMarkerSymbol.STYLE_CIRCLE,
+            12,
+            new SimpleLineSymbol(
+            SimpleLineSymbol.STYLE_NULL,
+            new Color([247, 34, 101, 0.9]),
+            1
+            ),
+            new Color([207, 34, 171, 0.5])
+        );
+});
+
+define('AppMap', [
+    "esri/map", "esri/graphic",
+    "MapSymbol", "esri/geometry/webMercatorUtils"
+], function(Map, Graphic, MapSymbol,webMercatorUtils) {
+    return function(elName) {
+        map = new Map(elName, {
+            basemap: "gray",
+            center: [13, 52],
+            zoom: 7
+        });
+            
+        map.on('click',function(evt) {
+            var mapPoint = evt.mapPoint;
+            map.graphics.add(new Graphic(mapPoint, MapSymbol));
+            var normalizedVal = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
+            console.dir(normalizedVal);
+        });
+        return map;
+    }
+});
+
+require([
+    "esri/layers/FeatureLayer",
+    "esri/renderers/HeatmapRenderer", "esri/layers/CSVLayer",
+    "AppMap",
     "dojo/domReady!"
   ],
-  function (InfoTemplate,
+  function (
     FeatureLayer, 
-    Map, Graphic, 
     HeatmapRenderer, CSVLayer,
-    SimpleMarkerSymbol, SimpleLineSymbol, Color,
-    webMercatorUtils){
+    AppMap) {
+        var map = AppMap("mapDiv");      
 
-        var symbolFac = function() {
-            return new SimpleMarkerSymbol(
-                SimpleMarkerSymbol.STYLE_CIRCLE,
-                12,
-                new SimpleLineSymbol(
-                SimpleLineSymbol.STYLE_NULL,
-                new Color([247, 34, 101, 0.9]),
-                1
-                ),
-                new Color([207, 34, 171, 0.5])
-            );
-        };
-
-        var init = function() {
-            map = new Map("mapDiv", {
-                basemap: "gray",
-                center: [13, 52],
-                zoom: 7
-            });
-
-            var symbol = symbolFac();
-                
-            map.on('click',function(evt) {
-                var mapPoint = evt.mapPoint;
-                map.graphics.add(new Graphic(mapPoint, symbol));
-                var normalizedVal = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
-                console.dir(normalizedVal);
-            })
-            return map;
-        };
-
-        var addLayer = function(map) {
+        var addLayer = function() {
             var heatmapFeatureLayerOptions = {
                 mode: FeatureLayer.MODE_SNAPSHOT,
                 outFields: [
@@ -76,9 +78,24 @@ require([
             map.addLayer(csv);
         }
 
-        var map = init();
-
+        var callTheApi = function() {
+            console.log("calling the api, ma");
+            fetch(THE_SERVER_API).then(
+              function(response) {
+                if (response.status !== 200) {
+                    return console.log('Looks like there was a problem. Status Code: ' + response.status);
+                }
+            
+                response.json().then(function(data) {
+                    console.log("the api returned, ma");
+                    addLayer();
+                    console.dir(data);
+                });
+              }
+            )
+        }
+     
         $('#somebtn').on('click', function() {
-            addLayer(map);
+            callTheApi()
         })       
   });
