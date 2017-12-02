@@ -5,20 +5,15 @@ import os
 
 
 
-app = Flask(__name__, template_folder='/Users/davidweber/Desktop/tc2017/tcberlin2017/frontend')
+#app = Flask(__name__, template_folder='../frontend')
+app = Flask(__name__, static_folder='../../frontend', static_url_path='')
+
 app.secret_key = '1234'
 
 app.debug = True
-
-
 app.config.from_object(__name__)
 
 
-
-
-@app.route('/')
-def home2():
-        return render_template('index.html')
 
 import Server.distance_matrix_calculator
 
