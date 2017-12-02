@@ -1,5 +1,5 @@
 
-var THE_SERVER_API = '/backend/api.json';
+var THE_SERVER_API = '/api.json';
 var STEP_SIZE = 0.1;
 
 var qs = function param(object) {
