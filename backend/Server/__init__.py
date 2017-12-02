@@ -20,5 +20,10 @@ def home():
         return 'Hello ArcGIS'
 
 
+
+
+
+
 if __name__ == "__main__":
-        app.run(debug=True,host='0.0.0.0', port=3000)
+    sess.init_app(app)
+    app.run(debug=True,host='0.0.0.0', port=3000)
