@@ -1,5 +1,5 @@
 
-var THE_SERVER_API = '/api.json';
+var THE_SERVER_API = '/frontend/api.json';
 var STEP_SIZE = 0.1;
 
 var qs = function param(object) {
@@ -107,9 +107,14 @@ define('AppMap', [
                 var mapPoint = evt.mapPoint;
                 var graphic = new Graphic(mapPoint, MapSymbol);
                 poiLayer.add(graphic);
-                var normalizedVal = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
-                ComputeDistanceCostMatrix({latitude: normalizedVal[1], longitude:normalizedVal[0]}, graphicsLayer);           
             }
+            var normalizedVal = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
+            var poiCoordinates = poiLayer.graphics.map(function(poiGraphic) {
+              var coords = webMercatorUtils.xyToLngLat(poiGraphic.geometry.x, poiGraphic.geometry.y);
+              return { latitude: coords[1], longitude: coords[0] }
+            });
+            ComputeDistanceCostMatrix({latitude: normalizedVal[1], longitude:normalizedVal[0]}, graphicsLayer);
+
         });
         return map;
     }
