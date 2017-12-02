@@ -4,6 +4,8 @@ import os
 from datetime import datetime
 import googlemaps
 from ast import literal_eval
+from bson import json_util
+from bson.json_util import dumps
 gmaps = googlemaps.Client(key='AIzaSyB8HBULX1Kov_bhrDnhi9XrT8N0L3kjscw')
 
 
@@ -15,4 +17,5 @@ def generate_tuples():
 	step=0.01
 	gridSize=(-5,5)
 	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1]) for j in range(gridSize[0],gridSize[1])]
-	return str(gmaps.distance_matrix(centerTuple, Matrix, mode='walking'))
+	distance_matrix=gmaps.distance_matrix(centerTuple, Matrix, mode='walking')
+	return dumps(distance_matrix, default=json_util.default)
