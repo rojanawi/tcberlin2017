@@ -16,6 +16,16 @@ define('MapSymbol',[
         );
 });
 
+define('MapSquare',[
+    "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleFillSymbol", "esri/Color", "esri/geometry/Polygon", "esri/graphic"
+], function(SimpleMarkerSymbol, SimpleFillSymbol, Color, Polygon, Graphic) {
+        return function(position, travelTime, stepSize){
+          var square = new Polygon([[position[0]+stepSize,position[1]+stepSize],[position[0]+stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]+stepSize]]);
+          console.dir(square)
+          var symbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_DASHDOT, new Color([255,0,0], 2),new Color([255,255,0,0.25]));
+        return new Graphic(square, symbol)
+}});
+
 define('AppMap', [
     "esri/map", "esri/graphic",
     "MapSymbol", "esri/geometry/webMercatorUtils"
@@ -23,10 +33,10 @@ define('AppMap', [
     return function(elName) {
         map = new Map(elName, {
             basemap: "gray",
-            center: [13, 52],
+            center: [0, 0],
             zoom: 7
         });
-            
+
         map.on('click',function(evt) {
             var mapPoint = evt.mapPoint;
             map.graphics.add(new Graphic(mapPoint, MapSymbol));
@@ -41,41 +51,23 @@ require([
     "esri/layers/FeatureLayer",
     "esri/renderers/HeatmapRenderer", "esri/layers/CSVLayer",
     "AppMap",
+    "MapSquare",
     "dojo/domReady!"
   ],
   function (
-    FeatureLayer, 
+    FeatureLayer,
     HeatmapRenderer, CSVLayer,
-    AppMap) {
-        var map = AppMap("mapDiv");      
+    AppMap, MapSquare) {
+        var map = AppMap("mapDiv");
+        var stepSize = 0.1;
 
-        var addLayer = function() {
-            var heatmapFeatureLayerOptions = {
-                mode: FeatureLayer.MODE_SNAPSHOT,
-                outFields: [
-                    "atmcond",
-                    "numfatal",
-                    "conszone",
-                    "age",
-                    "alcres",
-                    "sex"
-                ]
-            };
-    
-            esriConfig.defaults.io.corsEnabledServers.push("earthquake.usgs.gov");
-            var csv = new CSVLayer("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.csv", {
-                //fields: [{name: "depth", type: "Number"}]
+        var addLayer = function(data) {
+            var data_ = [[[0.1,0.1],1],[[0.2,0.2],2],[[0.3,0.3],3]]
+            data_.forEach(function(travelTimeData) {
+              var coords = travelTimeData[0]
+              var travelTime = travelTimeData[1]
+              map.graphics.add(MapSquare(coords, travelTime,stepSize/2))
             });
-    
-            var heatmapRenderer = new HeatmapRenderer({
-                colors: ["rgba(0, 0, 255, 0)","rgb(0, 0, 255)","rgb(255, 0, 255)", "rgb(255, 0, 0)"],
-                blurRadius: 12,
-                maxPixelIntensity: 250,
-                minPixelIntensity: 10,
-                field: 'mag'
-            });
-            csv.setRenderer(heatmapRenderer);
-            map.addLayer(csv);
         }
 
         var callTheApi = function() {
@@ -85,17 +77,17 @@ require([
                 if (response.status !== 200) {
                     return console.log('Looks like there was a problem. Status Code: ' + response.status);
                 }
-            
+
                 response.json().then(function(data) {
                     console.log("the api returned, ma");
-                    addLayer();
+                    addLayer(data);
                     console.dir(data);
                 });
               }
             )
         }
-     
+
         $('#somebtn').on('click', function() {
             callTheApi()
-        })       
+        })
   });
