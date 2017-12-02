@@ -17,8 +17,7 @@ app.config.from_object(__name__)
 
 @app.route('/')
 def home():
-        return 'Hello ArcGIS'
-
+        return flatmap.html
 
 import Server.distance_matrix_calculator
 
