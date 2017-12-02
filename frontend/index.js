@@ -99,18 +99,18 @@ define('AppMap', [
         map.addLayer(poiLayer);
 
         map.on('click',function(evt) {
-          if(evt.graphic){
-            console.log("Remove existing POI")
-            poiLayer.remove(evt.graphic)
-            // poiLayer.redraw()
-          } else {
-            console.log("Add new POI");
-            var mapPoint = evt.mapPoint;
-            var graphic = new Graphic(mapPoint, MapSymbol);
-            poiLayer.add(graphic);
-            var normalizedVal = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
-            ComputeDistanceCostMatrix({latitude: normalizedVal[1], longitude:normalizedVal[0]}, graphicsLayer);           
-        };
+            if(evt.graphic){
+                console.log("Remove existing POI")
+                poiLayer.remove(evt.graphic)
+            } else {
+                console.log("Add new POI");
+                var mapPoint = evt.mapPoint;
+                var graphic = new Graphic(mapPoint, MapSymbol);
+                poiLayer.add(graphic);
+                var normalizedVal = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
+                ComputeDistanceCostMatrix({latitude: normalizedVal[1], longitude:normalizedVal[0]}, graphicsLayer);           
+            }
+        });
         return map;
     }
 });
