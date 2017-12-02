@@ -1,5 +1,5 @@
 
-var THE_SERVER_API = '/calculate';
+var THE_SERVER_API = '/backend/api.json';
 var STEP_SIZE = 0.1;
 
 var qs = function param(object) {
@@ -32,9 +32,9 @@ define('MapSymbol',[
 });
 
 define('MapSquare',[
-    "esri/symbols/SimpleFillSymbol", 
-    "esri/Color", 
-    "esri/geometry/Polygon", 
+    "esri/symbols/SimpleFillSymbol",
+    "esri/Color",
+    "esri/geometry/Polygon",
     "esri/graphic"
 ], function(SimpleFillSymbol, Color, Polygon, Graphic) {
         return function(position, travelTime, stepSize){
@@ -45,7 +45,7 @@ define('MapSquare',[
 
 
 define('ComputeDistanceCostMatrix', ["MapSquare"],
- function(MapSquare) {    
+ function(MapSquare) {
         return function(coordinates, graphicsLayer) {
             var stepSize = STEP_SIZE;
             var redrawGraphicsLayer = function(data) {
@@ -68,7 +68,7 @@ define('ComputeDistanceCostMatrix', ["MapSquare"],
                 if (response.status !== 200) {
                     return console.log('Looks like there was a problem. Status Code: ' + response.status);
                 }
-    
+
                 response.json().then(function(data) {
                     console.log("the api returned, ma");
                     redrawGraphicsLayer(data);
@@ -94,14 +94,23 @@ define('AppMap', [
         });
 
         var graphicsLayer = new GraphicsLayer();
+        var poiLayer = new GraphicsLayer();
         map.addLayer(graphicsLayer);
+        map.addLayer(poiLayer);
 
         map.on('click',function(evt) {
+          if(evt.graphic){
+            console.log("Remove existing POI")
+            poiLayer.remove(evt.graphic)
+            // poiLayer.redraw()
+          } else {
+            console.log("Add new POI");
             var mapPoint = evt.mapPoint;
-            map.graphics.add(new Graphic(mapPoint, MapSymbol));
+            var graphic = new Graphic(mapPoint, MapSymbol);
+            poiLayer.add(graphic);
             var normalizedVal = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
-            
             ComputeDistanceCostMatrix({lat: normalizedVal[1], lon:normalizedVal[0]}, graphicsLayer);
+          }
         });
         return map;
     }
