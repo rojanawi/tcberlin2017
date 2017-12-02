@@ -109,9 +109,8 @@ define('AppMap', [
             var graphic = new Graphic(mapPoint, MapSymbol);
             poiLayer.add(graphic);
             var normalizedVal = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
-            ComputeDistanceCostMatrix({lat: normalizedVal[1], lon:normalizedVal[0]}, graphicsLayer);
-          }
-        });
+            ComputeDistanceCostMatrix({latitude: normalizedVal[1], longitude:normalizedVal[0]}, graphicsLayer);           
+        };
         return map;
     }
 });
