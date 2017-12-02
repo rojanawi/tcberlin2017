@@ -1,13 +1,10 @@
 from Server import app
-from flask import Flask, flash, render_template, url_for, request, redirect, session
+from flask import Flask, flash, render_template, url_for, request, redirect, session, jsonify
 import os
 from datetime import datetime
 import googlemaps
 from ast import literal_eval
-from bson import json_util
-from bson.json_util import dumps
 gmaps = googlemaps.Client(key='AIzaSyB8HBULX1Kov_bhrDnhi9XrT8N0L3kjscw')
-
 
 @app.route('/calculate', methods=['POST', 'GET'])
 def generate_tuples():
@@ -18,4 +15,5 @@ def generate_tuples():
 	gridSize=(-5,5)
 	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1]) for j in range(gridSize[0],gridSize[1])]
 	distance_matrix=gmaps.distance_matrix(centerTuple, Matrix, mode='walking')
-	return dumps(distance_matrix, default=json_util.default)
+	
+	return jsonify(distance_matrix)
