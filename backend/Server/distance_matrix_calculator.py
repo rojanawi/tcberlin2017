@@ -50,20 +50,38 @@ def calculate_multiple_tuples():
 
 	origins = []
 
-	for latlng in coords: 
+	minLat = coords[0]['latitude']
+	maxLat = coords[0]['latitude']
+	minLng = coords[0]['longitude']
+	maxLng = coords[0]['longitude']
+
+	for latlng in coords:
 		lat += latlng['latitude']
 		lng += latlng['longitude']
 		origins.append( (latlng['latitude'], latlng['longitude']) )
+		minLat = latlng['latitude'] if latlng['latitude'] < minLat else minLat
+		maxLat = latlng['latitude'] if latlng['latitude'] > minLat else minLat
+		minLng = latlng['longitude'] if latlng['longitude'] < minLat else minLat
+		minLat = latlng['longitude'] if latlng['longitude'] > minLat else minLat
+
+	horizontal_distance = (maxLat-minLat)*1.2
+	vertical_distance = (maxLng-minLng)*1.2
+
+	max_distance = max(horizontal_distance, vertical_distance)
+
+	gridSize=(-1,1)
+
+	nb_steps = gridSize[1]-gridSize[0]
+	step = max_distance / nb_steps
 
 	lat = lat / len(coords)
 	lng = lng / len(coords)
 
 	centerTuple = (lat, lng)
 
-	step=0.01
-	gridSize=(-1,1)
+	# step=0.01
 	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1]) for j in range(gridSize[0],gridSize[1])]
-	
+
 	center = {'lat': lat, 'lng': lng}
 
 	#distance_matrix = center
