@@ -1,6 +1,7 @@
 
+//var THE_SERVER_API = 'http://localhost:5000/calculate';
 var THE_SERVER_API = '/api.json';
-var STEP_SIZE = 0.1;
+var STEP_SIZE = 0.01;
 
 var qs = function param(object) {
     var encodedString = '';
@@ -37,10 +38,15 @@ define('MapSquare',[
     "esri/geometry/Polygon",
     "esri/graphic"
 ], function(SimpleFillSymbol, Color, Polygon, Graphic) {
-        return function(position, travelTime, stepSize){
-          var square = new Polygon([[position[0]+stepSize,position[1]+stepSize],[position[0]+stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]+stepSize]]);
-          var symbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_DASHDOT, new Color([255,0,0], 2),new Color([255,255,0,0.25]));
-        return new Graphic(square, symbol)
+    return function(position, travelTime, stepSize, minTravelTime, maxTravelTime){
+      var n = Math.min(100*travelTime/maxTravelTime, 100)
+      var squareColor = new Color([Math.round((255 * n) / 100),Math.round((255 * (100 - n)) / 100),0,0.2])
+      var square = new Polygon([[position[0]+stepSize,position[1]+stepSize],[position[0]+stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]+stepSize]]);
+      var symbol = new SimpleFillSymbol();
+      symbol.setStyle(SimpleFillSymbol.STYLE_SOLID);
+      symbol.setColor(squareColor);
+      symbol.setOutline(null);
+      return new Graphic(square, symbol)
 }});
 
 
@@ -49,13 +55,17 @@ define('ComputeDistanceCostMatrix', ["MapSquare"],
         return function(coordinates, graphicsLayer) {
             var stepSize = STEP_SIZE;
             var redrawGraphicsLayer = function(data) {
-                var data_ = [[[0.1,0.1],1],[[0.2,0.2],2],[[0.3,0.3],3]]
                 graphicsLayer.clear()
-                data_.forEach(function(travelTimeData) {
+                var minTravelTime = 0;
+                var maxTravelTime = 0;
+                data.forEach(function(d){ // compute max
+                  if(d[1] > maxTravelTime) maxTravelTime = d[1]
+                });
+                data.forEach(function(travelTimeData) {
                     var coords = travelTimeData[0]
                     var travelTime = travelTimeData[1]
                     graphicsLayer.add(
-                        MapSquare(coords, travelTime, stepSize/2))
+                        MapSquare(coords, travelTime, stepSize/2, minTravelTime, maxTravelTime))
                 });
                 graphicsLayer.redraw();
             }
@@ -71,8 +81,13 @@ define('ComputeDistanceCostMatrix', ["MapSquare"],
 
                 response.json().then(function(data) {
                     console.log("the api returned, ma");
-                    redrawGraphicsLayer(data);
-                    console.dir(data);
+                    var coords = data[1].rows[0].elements.map(function(element, i) {
+                        var coord = [data[0].Coordinates[i][1], data[0].Coordinates[i][0]];                      if(element.duration)
+                        return [coord, element.duration.value]
+                      else return [coord, -1]
+                    })
+                    var filtered = coords.filter(c => c[1] != -1)
+                    redrawGraphicsLayer(filtered);
                 });
               }
             )
@@ -89,8 +104,8 @@ define('AppMap', [
     return function(elName) {
         map = new Map(elName, {
             basemap: "gray",
-            center: [0, 0],
-            zoom: 7
+            center: [13.406853, 52.517796],
+            zoom: 15
         });
 
         var graphicsLayer = new GraphicsLayer();
@@ -107,9 +122,14 @@ define('AppMap', [
                 var mapPoint = evt.mapPoint;
                 var graphic = new Graphic(mapPoint, MapSymbol);
                 poiLayer.add(graphic);
-                var normalizedVal = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
-                ComputeDistanceCostMatrix({latitude: normalizedVal[1], longitude:normalizedVal[0]}, graphicsLayer);           
             }
+            var normalizedVal = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
+            var poiCoordinates = poiLayer.graphics.map(function(poiGraphic) {
+              var coords = webMercatorUtils.xyToLngLat(poiGraphic.geometry.x, poiGraphic.geometry.y);
+              return { latitude: coords[1], longitude: coords[0] }
+            });
+            ComputeDistanceCostMatrix({latitude: normalizedVal[1], longitude:normalizedVal[0]}, graphicsLayer);
+
         });
         return map;
     }
