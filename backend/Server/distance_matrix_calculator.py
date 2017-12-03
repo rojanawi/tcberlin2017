@@ -8,7 +8,7 @@ import googlemaps
 #from arcgis.features import FeatureSet
 #import arcgis.network as network
 from ast import literal_eval
-
+from pprint import pprint 
 gmaps = googlemaps.Client(key='AIzaSyA2eFpbH0vjcilxHTCx0l0dUYTKqJwwgZ4')
 #gis = GIS("https://www.arcgis.com", "nirsoffer", "fuckthisshit12")
 
@@ -60,12 +60,12 @@ def calculate_multiple_tuples():
 		lng += latlng['longitude']
 		origins.append( (latlng['latitude'], latlng['longitude']) )
 		minLat = latlng['latitude'] if latlng['latitude'] < minLat else minLat
-		maxLat = latlng['latitude'] if latlng['latitude'] > minLat else minLat
-		minLng = latlng['longitude'] if latlng['longitude'] < minLat else minLat
-		minLat = latlng['longitude'] if latlng['longitude'] > minLat else minLat
+		maxLat = latlng['latitude'] if latlng['latitude'] > maxLat else maxLat
+		minLng = latlng['longitude'] if latlng['longitude'] < minLng else minLng
+		maxLng = latlng['longitude'] if latlng['longitude'] > maxLng else maxLng
 
-	horizontal_distance = (maxLat-minLat)*1.2
-	vertical_distance = (maxLng-minLng)*1.2
+	horizontal_distance = abs(maxLat-minLat)*1.2
+	vertical_distance = abs(maxLng-minLng)*1.2
 
 	max_distance = max(horizontal_distance, vertical_distance)
 
@@ -79,17 +79,27 @@ def calculate_multiple_tuples():
 
 	centerTuple = (lat, lng)
 
+	pprint(max_distance)
+	pprint(gridSize)
+	pprint(minLat)
+	pprint(minLng)
+	pprint(maxLat)
+	pprint(maxLng)
+	pprint(step)
+
+
 	# step=0.01
 	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1]) for j in range(gridSize[0],gridSize[1])]
 
 	center = {'lat': lat, 'lng': lng}
 
-	#distance_matrix = center
-	distance_matrix=gmaps.distance_matrix(origins, Matrix, mode=transportationMode)
+	distance_matrix = center
+	#distance_matrix=gmaps.distance_matrix(origins, Matrix, mode=transportationMode)
 
 	ret = {
 		'coordinates': Matrix,
 		'center': center,
+		'stepSize': step,
 		'distanceMatrix': distance_matrix,
 	}
 	return jsonify(ret)

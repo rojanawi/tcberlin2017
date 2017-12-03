@@ -1,6 +1,6 @@
 
-// var THE_SERVER_API = '/calculate_multiple';
-var THE_SERVER_API = '/api3.json';
+ var THE_SERVER_API = '/calculate_multiple';
+//var THE_SERVER_API = '/api3.json';
 
 var STEP_SIZE = 0.01;
 
@@ -64,12 +64,12 @@ define('MapSquare',[
 }});
 
 define('RedrawGraphicsLayer', ["MapSquare"], function(MapSquare) {
-    var stepSize = STEP_SIZE;
+    //var stepSize = STEP_SIZE;
     var RedrawGraphicsLayer = function(graphicsLayer) {
         this.graphicsLayer = graphicsLayer;
     }
     RedrawGraphicsLayer.prototype = {
-        redraw: function(data) {
+        redraw: function(data, stepSize) {
             var self = this;
             this.graphicsLayer.clear()
             var minTravelTime = data[0][1];
@@ -125,7 +125,7 @@ Point, Graphic, MakeMapSymbol
                 response.json().then(function(data) {
                     self.renderMapCenter(data.center);
                     var coords = self.combineCoords(data);
-                    self.redrawGraphicsLayer.redraw(coords);
+                    self.redrawGraphicsLayer.redraw(coords, data.stepSize);
                 });
               }
             )
