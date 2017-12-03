@@ -3,6 +3,7 @@ from flask import Flask, flash, render_template, url_for, request, redirect, ses
 import os
 from datetime import datetime
 import googlemaps
+import numpy as np
 from arcgis import GIS
 from arcgis.features import Feature
 from arcgis.features import FeatureSet
@@ -36,14 +37,19 @@ def use_arcgis():
 	result = sa_layer.solve_service_area(fs, default_breaks=[5,10,15], travel_direction='esriNATravelDirectionToFacility',travel_mode=drive_mode)
 	return jsonify(result)
 
-@app.route('/calculate', methods=['POST', 'GET'])
-def generate_tuples():
-	latitude=float(request.args.get('latitude'))
-	longitude=float(request.args.get('longitude'))
-	centerTuple=(latitude,longitude)
+@app.route('/calculate_multiple', methods=['POST', 'GET'])
+def calculate_multiple_tuples():
+	latitude=(request.args.getlist('latitude'))
+	longitude=(request.args.getlist('longitude'))
+	latitude=[float(i) for i in latitude]
+	longitude=[float(i) for i in longitude]
+	latitude=(sum(latitude))/len(latitude)
+	longitude=sum(longitude)/len(longitude)
+	centerTuple = (latitude, longitude)
 	step=0.01
 	gridSize=(-2,2)
 	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1]) for j in range(gridSize[0],gridSize[1])]
 	distance_matrix=gmaps.distance_matrix(centerTuple, Matrix, mode=request.args.get('transportation_mode'))
 	Matrix = {'Coordinates': Matrix}
 	return jsonify(Matrix, distance_matrix)
+	#return str(Matrix)
