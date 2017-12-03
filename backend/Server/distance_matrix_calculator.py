@@ -37,8 +37,9 @@ def use_arcgis():
 	result = sa_layer.solve_service_area(fs, default_breaks=[5,10,15], travel_direction='esriNATravelDirectionToFacility',travel_mode=drive_mode)
 	return jsonify(result)
 
-@app.route('/calculate_multiple', methods=['POST', 'GET'])
+@app.route('/calculate_multiple', methods=['POST'])
 def calculate_multiple_tuples():
+	parameters=request.get_json
 	latitude=(request.args.getlist('latitude'))
 	longitude=(request.args.getlist('longitude'))
 	latitude=[float(i) for i in latitude]
