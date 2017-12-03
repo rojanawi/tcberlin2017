@@ -49,51 +49,75 @@ define('MapSquare',[
       return new Graphic(square, symbol)
 }});
 
+define('RedrawGraphicsLayer', ["MapSquare"], function(MapSquare) {
+    var stepSize = STEP_SIZE;
+    var RedrawGraphicsLayer = function(graphicsLayer) {
+        this.graphicsLayer = graphicsLayer;
+    }
+    RedrawGraphicsLayer.prototype = {
+        redraw: function(data) {
+            var self = this;
+            this.graphicsLayer.clear()
+            var minTravelTime = 0;
+            var maxTravelTime = 0;
+            data.forEach(function(d){ // compute max
+              if(d[1] > maxTravelTime) maxTravelTime = d[1]
+            });
+            data.forEach(function(travelTimeData) {
+                var coords = travelTimeData[0]
+                var travelTime = travelTimeData[1]
+                self.graphicsLayer.add(
+                    MapSquare(coords, travelTime, stepSize/2, minTravelTime, maxTravelTime))
+            });
+            this.graphicsLayer.redraw();
+        }    
+    }
 
-define('ComputeDistanceCostMatrix', ["MapSquare"],
- function(MapSquare) {
-        return function(coordinates, graphicsLayer) {
-            var stepSize = STEP_SIZE;
-            var redrawGraphicsLayer = function(data) {
-                graphicsLayer.clear()
-                var minTravelTime = 0;
-                var maxTravelTime = 0;
-                data.forEach(function(d){ // compute max
-                  if(d[1] > maxTravelTime) maxTravelTime = d[1]
-                });
-                data.forEach(function(travelTimeData) {
-                    var coords = travelTimeData[0]
-                    var travelTime = travelTimeData[1]
-                    graphicsLayer.add(
-                        MapSquare(coords, travelTime, stepSize/2, minTravelTime, maxTravelTime))
-                });
-                graphicsLayer.redraw();
-            }
+    return RedrawGraphicsLayer;
+});
 
-            console.log("calling the api with coords, ma" + coordinates);
+define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
+ function(RedrawGraphicsLayer) {
+    var stepSize = STEP_SIZE;
+    
+    ComputeDistanceCostMatrix = function(graphicsLayer) {
+        this.graphicsLayer = graphicsLayer;
+        this.redrawGraphicsLayer= new RedrawGraphicsLayer(graphicsLayer);
+    }
+
+    ComputeDistanceCostMatrix.prototype = {
+        compute: function(coordinates) {
+            console.dir("calling the api with coords, ma" + coordinates);
             var url = THE_SERVER_API + '?' + qs(coordinates);
+            
+            var self = this;
 
-            fetch(url, coordinates).then(
-              function(response) {
+            fetch(url, coordinates).then(function(response) {
                 if (response.status !== 200) {
                     return console.log('Looks like there was a problem. Status Code: ' + response.status);
                 }
+                console.log("the api returned, ma");
 
                 response.json().then(function(data) {
-                    console.log("the api returned, ma");
                     var coords = data[1].rows[0].elements.map(function(element, i) {
-                        var coord = [data[0].Coordinates[i][1], data[0].Coordinates[i][0]];                      if(element.duration)
-                        return [coord, element.duration.value]
-                      else return [coord, -1]
+                        var coord = [data[0].Coordinates[i][1], data[0].Coordinates[i][0]];
+                        if(element.duration)
+                            return [coord, element.duration.value]
+                        else
+                            return [coord, -1]
                     })
-                    var filtered = coords.filter(c => c[1] != -1)
-                    redrawGraphicsLayer(filtered);
+                    var filtered = coords.filter(function(c) { 
+                        return c[1] != -1;
+                    })
+                    self.redrawGraphicsLayer.redraw(filtered);
                 });
               }
             )
         }
-
+    }
+    return ComputeDistanceCostMatrix;
 });
+
 
 define('AppMap', [
     "esri/map", "esri/graphic",
@@ -108,28 +132,37 @@ define('AppMap', [
             zoom: 15
         });
 
+        var pois = [];
+
         var graphicsLayer = new GraphicsLayer();
         var poiLayer = new GraphicsLayer();
         map.addLayer(graphicsLayer);
         map.addLayer(poiLayer);
 
+        var computeMatrix = new  ComputeDistanceCostMatrix(graphicsLayer);
+
         map.on('click',function(evt) {
-            if(evt.graphic){
-                console.log("Remove existing POI")
+
+            var lnglat = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
+            
+            if (evt.graphic){
                 poiLayer.remove(evt.graphic)
             } else {
-                console.log("Add new POI");
                 var mapPoint = evt.mapPoint;
                 var graphic = new Graphic(mapPoint, MapSymbol);
                 poiLayer.add(graphic);
             }
-            var normalizedVal = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
-            var poiCoordinates = poiLayer.graphics.map(function(poiGraphic) {
-              var coords = webMercatorUtils.xyToLngLat(poiGraphic.geometry.x, poiGraphic.geometry.y);
-              return { latitude: coords[1], longitude: coords[0] }
+            
+            var poiCoordinates = poiLayer.graphics.map(function(poiGraphic) {		
+                var coords = webMercatorUtils.xyToLngLat(poiGraphic.geometry.x, poiGraphic.geometry.y);
+                return { latitude: coords[1], longitude: coords[0] }		
             });
-            ComputeDistanceCostMatrix({latitude: normalizedVal[1], longitude:normalizedVal[0]}, graphicsLayer);
 
+            /*var poiCoordinates = poiLayer.graphics.map(function(poiGraphic) {
+              return { latitude: coords[1], longitude: coords[0] }
+            });*/
+            
+            computeMatrix.compute({latitude: lnglat[1], longitude:lnglat[0]});
         });
         return map;
     }
