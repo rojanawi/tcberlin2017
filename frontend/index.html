@@ -41,8 +41,21 @@
 
     <section class="section">
       <div class="container">
-        
-          <button class="button" id="somebtn">Click on me</button>
+        Transportation mode:
+        <select class="select" id="mode">
+          <option value="driving">Driving</option>
+          <option value="walking">Walking</option>
+          <option value="bicycling">Bicycling</option>
+          <option value="transit" selected="selected">Public Transit</option>
+        </select>
+        Point of interest category:
+        <select class="select" id="poitype">
+          <option value="work" selected="selected">Work</option>
+          <option value="school">School</option>
+          <option value="friend">Friend</option>
+          <option value="facility">Public Facility</option>
+        </select>
+
           <div id="mapDiv"></div>
 
       </div>
