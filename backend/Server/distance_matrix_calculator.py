@@ -69,7 +69,7 @@ def calculate_multiple_tuples():
 
 	max_distance = max(horizontal_distance, vertical_distance)
 
-	gridSize=(-1,1)
+	gridSize=(-2,2)
 
 	nb_steps = gridSize[1]-gridSize[0]
 	step = max_distance / nb_steps
@@ -93,8 +93,8 @@ def calculate_multiple_tuples():
 
 	center = {'lat': lat, 'lng': lng}
 
-	distance_matrix = center
-	#distance_matrix=gmaps.distance_matrix(origins, Matrix, mode=transportationMode)
+	#distance_matrix = center
+	distance_matrix=gmaps.distance_matrix(origins, Matrix, mode=transportationMode)
 
 	ret = {
 		'coordinates': Matrix,
