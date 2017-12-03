@@ -48,21 +48,26 @@ def calculate_multiple_tuples():
 	coords = parameters['coords']
 	transportationMode = parameters['transportationMode']
 
+	origins = []
+
 	for latlng in coords: 
 		lat += latlng['latitude']
 		lng += latlng['longitude']
+		origins.append( (latlng['latitude'], latlng['longitude']) )
 
 	lat = lat / len(coords)
 	lng = lng / len(coords)
 
 	centerTuple = (lat, lng)
+
 	step=0.01
 	gridSize=(-1,1)
 	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1]) for j in range(gridSize[0],gridSize[1])]
 	
 	center = {'lat': lat, 'lng': lng}
+
 	#distance_matrix = center
-	distance_matrix=gmaps.distance_matrix(centerTuple, Matrix, mode=transportationMode)
+	distance_matrix=gmaps.distance_matrix(origins, Matrix, mode=transportationMode)
 
 	ret = {
 		'coordinates': Matrix,
