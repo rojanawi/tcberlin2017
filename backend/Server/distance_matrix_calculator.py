@@ -20,7 +20,7 @@ def generate_tuples():
 	step=0.01
 	gridSize=(-2,2)
 	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1]) for j in range(gridSize[0],gridSize[1])]
-	distance_matrix=gmaps.distance_matrix(centerTuple, Matrix, mode='walking')
+	distance_matrix=gmaps.distance_matrix(centerTuple, Matrix, mode=request.args.get('transportation_mode'))
 	Matrix = {'Coordinates': Matrix}
 	return jsonify(Matrix, distance_matrix)
 
@@ -35,3 +35,15 @@ def use_arcgis():
 	drive_mode = [t for t in travel_modes['supportedTravelModes'] if t['name'] == 'Driving Time'][0]
 	result = sa_layer.solve_service_area(fs, default_breaks=[5,10,15], travel_direction='esriNATravelDirectionToFacility',travel_mode=drive_mode)
 	return jsonify(result)
+
+@app.route('/calculate', methods=['POST', 'GET'])
+def generate_tuples():
+	latitude=float(request.args.get('latitude'))
+	longitude=float(request.args.get('longitude'))
+	centerTuple=(latitude,longitude)
+	step=0.01
+	gridSize=(-2,2)
+	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1]) for j in range(gridSize[0],gridSize[1])]
+	distance_matrix=gmaps.distance_matrix(centerTuple, Matrix, mode=request.args.get('transportation_mode'))
+	Matrix = {'Coordinates': Matrix}
+	return jsonify(Matrix, distance_matrix)
