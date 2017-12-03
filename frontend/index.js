@@ -174,7 +174,6 @@ define('AppMap', [
                 } else {
                    self.addPoi(evt.mapPoint)
                 }
-                self.onChange();
             })
         },
 
@@ -182,7 +181,7 @@ define('AppMap', [
             this.poiType = poiType;
         },
         
-        onChange: function() {
+        doCompute: function() {
             var poiCoordinates = this.poiLayer.graphics.map(function(poiGraphic) {
                 var coords = webMercatorUtils.xyToLngLat(poiGraphic.geometry.x, poiGraphic.geometry.y);
                 return { latitude: coords[1], longitude: coords[0] }
@@ -199,10 +198,6 @@ define('AppMap', [
 
         dropPoi: function(graphic) {
             this.poiLayer.remove(graphic);
-        },
-
-        ctxChanged: function() {
-            this.onChange();
         }
     }
     return AppMap;
@@ -222,10 +217,13 @@ require([
 
         $('#mode').on('change', function() {
             map.ctx.mode = $(this).val()
-            map.onChange()
         });
 
         $('#poitype').on('change',function() {
             map.setPoiType($(this).val()); 
+        });
+
+        $('#btn-compute').on('click', function() {
+            map.doCompute();
         });
   });
