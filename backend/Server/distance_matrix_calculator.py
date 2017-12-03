@@ -12,7 +12,7 @@ def generate_tuples():
 	longitude=float(request.args.get('longitude'))
 	centerTuple=(latitude,longitude)
 	step=0.9
-	gridSize=(-3,3)
+	gridSize=(-1,1)
 	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1]) for j in range(gridSize[0],gridSize[1])]
 	distance_matrix=gmaps.distance_matrix(centerTuple, Matrix, mode='walking')
 	Matrix = {'Coordinates': Matrix}
