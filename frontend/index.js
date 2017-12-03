@@ -101,9 +101,6 @@ define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
     ComputeDistanceCostMatrix.prototype = {
         compute: function(params) {
             console.dir(params);
-//            var url = THE_SERVER_API + '?' + qs(coordinates);
-
-
             var self = this;
 
             fetch(THE_SERVER_API,{
@@ -187,9 +184,8 @@ define('AppMap', [
                 var coords = webMercatorUtils.xyToLngLat(poiGraphic.geometry.x, poiGraphic.geometry.y);
                 return { latitude: coords[1], longitude: coords[0] }
             });
-            var lnglat = poiCoordinates[0];
 
-            this.computeMatrix.compute({ lnglat: lnglat, transportationMode: this.ctx.mode });
+            this.computeMatrix.compute({ coords: poiCoordinates, transportationMode: this.ctx.mode });
         },
 
         addPoi: function(mapPoint) {
