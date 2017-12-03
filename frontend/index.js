@@ -1,6 +1,7 @@
 
-//var THE_SERVER_API = 'http://localhost:5000/calculate';
-var THE_SERVER_API = '/api.json';
+var THE_SERVER_API = '/calculate_multiple';
+//var THE_SERVER_API = '/api2.json';
+
 var STEP_SIZE = 0.01;
 
 var qs = function param(object) {
@@ -89,8 +90,12 @@ define('RedrawGraphicsLayer', ["MapSquare"], function(MapSquare) {
     return RedrawGraphicsLayer;
 });
 
-define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
- function(RedrawGraphicsLayer) {
+define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer",
+"esri/geometry/Point","esri/graphic", "MakeMapSymbol"
+],
+ function(RedrawGraphicsLayer,
+Point, Graphic, MakeMapSymbol
+) {
     var stepSize = STEP_SIZE;
 
     ComputeDistanceCostMatrix = function(graphicsLayer) {
@@ -101,8 +106,6 @@ define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
     ComputeDistanceCostMatrix.prototype = {
         compute: function(params) {
             console.dir(params);
-//            var url = THE_SERVER_API + '?' + qs(coordinates);
-
             var self = this;
 
             fetch(THE_SERVER_API,{
@@ -118,24 +121,36 @@ define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
                 }
                 console.log("the api returned, ma");
 
-                response.json().then(function(data) {
-                    var coords = data[1].rows[0].elements.map(function(element, i) {
-                        var coord = [data[0].Coordinates[i][1], data[0].Coordinates[i][0]];
-                        var totalDuration = data[1].rows.reduce(function(acc,row) {
-                          if (row.elements[i].duration && acc != -1) 
-                            return acc + row.elements[i].duration.value
-                          else 
-                            return -1
-                        }, 0);
-                        return [coord, totalDuration]
-                    })
-                    var filtered = coords.filter(function(c) {
-                        return c[1] != -1;
-                    })
-                    self.redrawGraphicsLayer.redraw(filtered);
+                response.json().then(function(data) {                    
+                    self.renderMapCenter(data.center);
+                    var coords = self.combineCoords(data);
+                    self.redrawGraphicsLayer.redraw(coords);
                 });
               }
             )
+        },
+
+        combineCoords: function(data) {
+            var coords = data.distanceMatrix.rows[0].elements.map(function(element, i) {
+                var coord = [data.coordinates[i][1], data.coordinates[i][0]];
+                var totalDuration = data.distanceMatrix.rows.reduce(function(acc,row) {
+                  if (row.elements[i].duration && acc != -1) 
+                    return acc + row.elements[i].duration.value
+                  else 
+                    return -1
+                }, 0);
+                return [coord, totalDuration]
+            })
+            coords = coords.filter(function(c) {
+                return c[1] != -1;
+            })
+
+            return coords;
+        },
+        renderMapCenter: function(center) {
+            var pt = new Point(center.lng,center.lat)
+            var graphic = new Graphic(pt, MakeMapSymbol('work') );
+            this.graphicsLayer.add(graphic);
         }
     }
     return ComputeDistanceCostMatrix;
@@ -186,9 +201,8 @@ define('AppMap', [
                 var coords = webMercatorUtils.xyToLngLat(poiGraphic.geometry.x, poiGraphic.geometry.y);
                 return { latitude: coords[1], longitude: coords[0] }
             });
-            var lnglat = poiCoordinates[0];
 
-            this.computeMatrix.compute({ lnglat: lnglat, transportationMode: this.ctx.mode });
+            this.computeMatrix.compute({ coords: poiCoordinates, transportationMode: this.ctx.mode });
         },
 
         addPoi: function(mapPoint) {

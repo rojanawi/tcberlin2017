@@ -1,0 +1,86 @@
+{
+    "coordinates": [
+        [
+            52.508501052368494,
+            13.397872239425455
+        ],
+        [
+            52.508501052368494,
+            13.407872239425455
+        ],
+        [
+            52.51850105236849,
+            13.397872239425455
+        ],
+        [
+            52.51850105236849,
+            13.407872239425455
+        ]
+    ],
+    "distanceMatrix": {
+        "destination_addresses": [
+            "Jerusalemer Str. 49, 10117 Berlin, Germany",
+            "Sebastianstraße 37, 10179 Berlin, Germany",
+            "Unter den Linden 1, 10117 Berlin, Germany",
+            "Spandauer Str. 25, 10178 Berlin, Germany"
+        ],
+        "origin_addresses": [
+            "Spandauer Str. 25, 10178 Berlin, Germany"
+        ],
+        "rows": [
+            {
+                "elements": [
+                    {
+                        "distance": {
+                            "text": "1.6 km",
+                            "value": 1627
+                        },
+                        "duration": {
+                            "text": "6 mins",
+                            "value": 350
+                        },
+                        "status": "OK"
+                    },
+                    {
+                        "distance": {
+                            "text": "1.6 km",
+                            "value": 1562
+                        },
+                        "duration": {
+                            "text": "6 mins",
+                            "value": 338
+                        },
+                        "status": "OK"
+                    },
+                    {
+                        "distance": {
+                            "text": "0.8 km",
+                            "value": 845
+                        },
+                        "duration": {
+                            "text": "3 mins",
+                            "value": 170
+                        },
+                        "status": "OK"
+                    },
+                    {
+                        "distance": {
+                            "text": "1 m",
+                            "value": 0
+                        },
+                        "duration": {
+                            "text": "1 min",
+                            "value": 0
+                        },
+                        "status": "OK"
+                    }
+                ]
+            }
+        ],
+        "status": "OK"
+    },
+    "center": {
+        "lat": 54,
+        "lng": 13
+    }
+}
