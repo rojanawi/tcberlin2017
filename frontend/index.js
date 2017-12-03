@@ -1,6 +1,6 @@
 
-var THE_SERVER_API = '/api.json';
-var STEP_SIZE = 0.1;
+var THE_SERVER_API = 'http://localhost:5000/calculate';
+var STEP_SIZE = 0.5;
 
 var qs = function param(object) {
     var encodedString = '';
@@ -103,8 +103,8 @@ define('AppMap', [
     return function(elName) {
         map = new Map(elName, {
             basemap: "gray",
-            center: [0, 0],
-            zoom: 7
+            center: [13.406853, 52.517796],
+            zoom: 15
         });
 
         var graphicsLayer = new GraphicsLayer();
