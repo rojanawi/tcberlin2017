@@ -1,6 +1,6 @@
 
-//var THE_SERVER_API = 'http://localhost:5000/calculate';
-var THE_SERVER_API = '/api.json';
+var THE_SERVER_API = '/calculate_multiple';
+//var THE_SERVER_API = '/api2.json';
 var STEP_SIZE = 0.01;
 
 var qs = function param(object) {
@@ -102,6 +102,7 @@ define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
         compute: function(params) {
             console.dir(params);
 //            var url = THE_SERVER_API + '?' + qs(coordinates);
+
 
             var self = this;
 
