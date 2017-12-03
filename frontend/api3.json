@@ -1,0 +1,87 @@
+{
+    "center": {
+      "lat": 52.514264768525706, 
+      "lng": 13.518196860626007
+    }, 
+    "coordinates": [
+      [
+        52.50426476852571, 
+        13.508196860626008
+      ], 
+      [
+        52.50426476852571, 
+        13.518196860626007
+      ], 
+      [
+        52.514264768525706, 
+        13.508196860626008
+      ], 
+      [
+        52.514264768525706, 
+        13.518196860626007
+      ]
+    ], 
+    "distanceMatrix": {
+      "destination_addresses": [
+        "Kraetkestra\u00dfe 25, 10315 Berlin, Germany", 
+        "Elfriede-Tyg\u00f6r-Stra\u00dfe 1, 10319 Berlin, Germany", 
+        "R\u00fcdigerstra\u00dfe 64, 10365 Berlin, Germany", 
+        "August-Bebel-Stra\u00dfe, 10315 Berlin, Germany"
+      ], 
+      "origin_addresses": [
+        "August-Bebel-Stra\u00dfe, 10315 Berlin, Germany"
+      ], 
+      "rows": [
+        {
+          "elements": [
+            {
+              "distance": {
+                "text": "3.5 km", 
+                "value": 3485
+              }, 
+              "duration": {
+                "text": "16 mins", 
+                "value": 964
+              }, 
+              "status": "OK"
+            }, 
+            {
+              "distance": {
+                "text": "3.0 km", 
+                "value": 3004
+              }, 
+              "duration": {
+                "text": "14 mins", 
+                "value": 856
+              }, 
+              "status": "OK"
+            }, 
+            {
+              "distance": {
+                "text": "2.3 km", 
+                "value": 2334
+              }, 
+              "duration": {
+                "text": "23 mins", 
+                "value": 1370
+              }, 
+              "status": "OK"
+            }, 
+            {
+              "distance": {
+                "text": "1 m", 
+                "value": 0
+              }, 
+              "duration": {
+                "text": "1 min", 
+                "value": 0
+              }, 
+              "status": "OK"
+            }
+          ]
+        }
+      ], 
+      "status": "OK"
+    }
+  }
+  

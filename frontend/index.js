@@ -1,6 +1,6 @@
 
-//var THE_SERVER_API = '/calculate_multiple';
-var THE_SERVER_API = '/api2.json';
+var THE_SERVER_API = '/calculate_multiple';
+//var THE_SERVER_API = '/api2.json';
 
 var STEP_SIZE = 0.01;
 
