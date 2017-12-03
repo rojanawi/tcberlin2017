@@ -1,6 +1,6 @@
 
-var THE_SERVER_API = '/calculate_multiple';
-//var THE_SERVER_API = '/api2.json';
+// var THE_SERVER_API = '/calculate_multiple';
+var THE_SERVER_API = '/api3.json';
 
 var STEP_SIZE = 0.01;
 
@@ -27,7 +27,7 @@ define('MakeMapSymbol',[
             case 'school': return new Color([34, 247, 101, 0.9]); break;
             case 'friend': return new Color([247, 180, 34, 0.9]); break;
             case 'facility': return new Color([101, 247, 34, 0.9]); break;
-        }    
+        }
     }
 
     return function(poiType) {
@@ -38,7 +38,7 @@ define('MakeMapSymbol',[
             16,
             new SimpleLineSymbol(
                 SimpleLineSymbol.STYLE_NULL,
-                color, 
+                color,
                 1
             ),
             color
@@ -53,7 +53,7 @@ define('MapSquare',[
     "esri/graphic"
 ], function(SimpleFillSymbol, Color, Polygon, Graphic) {
     return function(position, travelTime, stepSize, minTravelTime, maxTravelTime){
-      var n = Math.min(100*travelTime/maxTravelTime, 100)
+      var n = Math.min(100*(travelTime-minTravelTime)/(maxTravelTime-minTravelTime), 100)
       var squareColor = new Color([Math.round((255 * n) / 100),Math.round((255 * (100 - n)) / 100),0,0.2])
       var square = new Polygon([[position[0]+stepSize,position[1]+stepSize],[position[0]+stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]+stepSize]]);
       var symbol = new SimpleFillSymbol();
@@ -72,9 +72,10 @@ define('RedrawGraphicsLayer', ["MapSquare"], function(MapSquare) {
         redraw: function(data) {
             var self = this;
             this.graphicsLayer.clear()
-            var minTravelTime = 0;
+            var minTravelTime = data[0][1];
             var maxTravelTime = 0;
-            data.forEach(function(d){ // compute max
+            data.forEach(function(d){ // compute max & min
+              if(d[1] < minTravelTime) minTravelTime = d[1]
               if(d[1] > maxTravelTime) maxTravelTime = d[1]
             });
             data.forEach(function(travelTimeData) {
@@ -121,7 +122,7 @@ Point, Graphic, MakeMapSymbol
                 }
                 console.log("the api returned, ma");
 
-                response.json().then(function(data) {                    
+                response.json().then(function(data) {
                     self.renderMapCenter(data.center);
                     var coords = self.combineCoords(data);
                     self.redrawGraphicsLayer.redraw(coords);
@@ -134,9 +135,9 @@ Point, Graphic, MakeMapSymbol
             var coords = data.distanceMatrix.rows[0].elements.map(function(element, i) {
                 var coord = [data.coordinates[i][1], data.coordinates[i][0]];
                 var totalDuration = data.distanceMatrix.rows.reduce(function(acc,row) {
-                  if (row.elements[i].duration && acc != -1) 
+                  if (row.elements[i].duration && acc != -1)
                     return acc + row.elements[i].duration.value
-                  else 
+                  else
                     return -1
                 }, 0);
                 return [coord, totalDuration]
@@ -182,7 +183,7 @@ define('AppMap', [
             this.map.addLayer(this.poiLayer);
             var self = this;
 
-            this.map.on('click',function(evt) {   
+            this.map.on('click',function(evt) {
                 var lnglat = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
                 if (evt.graphic && evt.graphic.geometry.type == "point"){
                     self.dropPoi(evt.graphic)
@@ -195,7 +196,7 @@ define('AppMap', [
         setPoiType: function(poiType) {
             this.poiType = poiType;
         },
-        
+
         doCompute: function() {
             var poiCoordinates = this.poiLayer.graphics.map(function(poiGraphic) {
                 var coords = webMercatorUtils.xyToLngLat(poiGraphic.geometry.x, poiGraphic.geometry.y);
@@ -234,7 +235,7 @@ require([
         });
 
         $('#poitype').on('change',function() {
-            map.setPoiType($(this).val()); 
+            map.setPoiType($(this).val());
         });
 
         $('#btn-compute').on('click', function() {
