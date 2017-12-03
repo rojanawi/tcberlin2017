@@ -16,19 +16,33 @@ var qs = function param(object) {
     return encodedString;
 }
 
-define('MapSymbol',[
+define('MakeMapSymbol',[
     "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/Color"
 ], function(SimpleMarkerSymbol, SimpleLineSymbol, Color) {
+
+    var _col = function(poiType) {
+        switch(poiType) {
+            case 'work': return new Color([247, 34, 101, 0.9]); break;
+            case 'school': return new Color([34, 247, 101, 0.9]); break;
+            case 'friend': return new Color([247, 180, 34, 0.9]); break;
+            case 'facility': return new Color([101, 247, 34, 0.9]); break;
+        }    
+    }
+
+    return function(poiType) {
+        var color = _col(poiType);
+
         return new SimpleMarkerSymbol(
             SimpleMarkerSymbol.STYLE_CIRCLE,
-            12,
+            16,
             new SimpleLineSymbol(
-            SimpleLineSymbol.STYLE_NULL,
-            new Color([247, 34, 101, 0.9]),
-            1
+                SimpleLineSymbol.STYLE_NULL,
+                color, 
+                1
             ),
-            new Color([207, 34, 171, 0.5])
+            color
         );
+    }
 });
 
 define('MapSquare',[
@@ -86,7 +100,7 @@ define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
 
     ComputeDistanceCostMatrix.prototype = {
         compute: function(params) {
-            console.dir("calling the api with coords, ma" + params);
+            console.dir(params);
 //            var url = THE_SERVER_API + '?' + qs(coordinates);
 
             var self = this;
@@ -108,8 +122,10 @@ define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
                     var coords = data[1].rows[0].elements.map(function(element, i) {
                         var coord = [data[0].Coordinates[i][1], data[0].Coordinates[i][0]];
                         var totalDuration = data[1].rows.reduce(function(acc,row) {
-                          if(row.elements[i].duration && acc != -1) return acc + row.elements[i].duration.value
-                          else return -1
+                          if (row.elements[i].duration && acc != -1) 
+                            return acc + row.elements[i].duration.value
+                          else 
+                            return -1
                         }, 0);
                         return [coord, totalDuration]
                     })
@@ -127,10 +143,10 @@ define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
 
 define('AppMap', [
     "esri/map", "esri/graphic",
-    "MapSymbol", 'ComputeDistanceCostMatrix',
+    "MakeMapSymbol", 'ComputeDistanceCostMatrix',
     "esri/layers/GraphicsLayer",
      "esri/geometry/webMercatorUtils"
-], function(Map, Graphic, MapSymbol, ComputeDistanceCostMatrix, GraphicsLayer, webMercatorUtils) {
+], function(Map, Graphic, MakeMapSymbol, ComputeDistanceCostMatrix, GraphicsLayer, webMercatorUtils) {
     var AppMap = function(elName, ctx) {
         this.elName = elName;
         this.ctx = ctx;
@@ -162,6 +178,10 @@ define('AppMap', [
             })
         },
 
+        setPoiType: function(poiType) {
+            this.poiType = poiType;
+        },
+        
         onChange: function() {
             var poiCoordinates = this.poiLayer.graphics.map(function(poiGraphic) {
                 var coords = webMercatorUtils.xyToLngLat(poiGraphic.geometry.x, poiGraphic.geometry.y);
@@ -173,7 +193,7 @@ define('AppMap', [
         },
 
         addPoi: function(mapPoint) {
-            var graphic = new Graphic(mapPoint, MapSymbol);
+            var graphic = new Graphic(mapPoint, MakeMapSymbol(this.poiType) );
             this.poiLayer.add(graphic);
         },
 
@@ -194,19 +214,18 @@ require([
   ],
   function (AppMap) {
         var map = new AppMap("mapDiv", {
-            mode: $('#mode').val(),
-            poiType: $('#poitype').val()
+            mode: $('#mode').val()
         });
 
+        map.setPoiType($('#poitype').val());
         map.init();
 
         $('#mode').on('change', function() {
             map.ctx.mode = $(this).val()
             map.onChange()
         });
-        $('#poitype').on('change',function() {
-            map.ctx.poitype = $(this).val()
-            map.onChange()
-        });
 
+        $('#poitype').on('change',function() {
+            map.setPoiType($(this).val()); 
+        });
   });
