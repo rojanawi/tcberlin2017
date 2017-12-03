@@ -151,11 +151,12 @@ define('AppMap', [
                 var mapPoint = evt.mapPoint;
                 var graphic = new Graphic(mapPoint, MapSymbol);
                 poiLayer.add(graphic);
-        
-                pois.push({
-                    lnglat: lnglat
-                });
             }
+            
+            var poiCoordinates = poiLayer.graphics.map(function(poiGraphic) {		
+                var coords = webMercatorUtils.xyToLngLat(poiGraphic.geometry.x, poiGraphic.geometry.y);
+                return { latitude: coords[1], longitude: coords[0] }		
+            });
 
             /*var poiCoordinates = poiLayer.graphics.map(function(poiGraphic) {
               return { latitude: coords[1], longitude: coords[0] }
