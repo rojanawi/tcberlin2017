@@ -1,6 +1,7 @@
 
-var THE_SERVER_API = 'http://localhost:5000/calculate';
-var STEP_SIZE = 0.5;
+//var THE_SERVER_API = 'http://localhost:5000/calculate';
+var THE_SERVER_API = '/api.json';
+var STEP_SIZE = 0.01;
 
 var qs = function param(object) {
     var encodedString = '';
@@ -80,8 +81,7 @@ define('ComputeDistanceCostMatrix', ["MapSquare"],
                 response.json().then(function(data) {
                     console.log("the api returned, ma");
                     var coords = data[1].rows[0].elements.map(function(element, i) {
-                      var coord = data[0].Coordinates[i];
-                      if(element.duration)
+                        var coord = [data[0].Coordinates[i][1], data[0].Coordinates[i][0]];                      if(element.duration)
                         return [coord, element.duration.value]
                       else return [coord, -1]
                     })
