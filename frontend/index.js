@@ -1,5 +1,5 @@
 
-var THE_SERVER_API = '/frontend/api.json';
+var THE_SERVER_API = '/api.json';
 var STEP_SIZE = 0.1;
 
 var qs = function param(object) {
@@ -39,7 +39,7 @@ define('MapSquare',[
 ], function(SimpleFillSymbol, Color, Polygon, Graphic) {
     return function(position, travelTime, stepSize, minTravelTime, maxTravelTime){
       var n = Math.min(100*travelTime/maxTravelTime, 100)
-      var squareColor = new Color([(255 * n) / 100,(255 * (100 - n)) / 100,0])
+      var squareColor = new Color([Math.round((255 * n) / 100),Math.round((255 * (100 - n)) / 100),0])
       var square = new Polygon([[position[0]+stepSize,position[1]+stepSize],[position[0]+stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]+stepSize]]);
       var symbol = new SimpleFillSymbol();
       symbol.setStyle(SimpleFillSymbol.STYLE_SOLID);
@@ -79,11 +79,14 @@ define('ComputeDistanceCostMatrix', ["MapSquare"],
 
                 response.json().then(function(data) {
                     console.log("the api returned, ma");
-                    var coords = data.rows[0].elements.map(function(element, i) {
-                      var coord = [i/10,0];
-                      return [coord, element.duration.value]
+                    var coords = data[1].rows[0].elements.map(function(element, i) {
+                      var coord = data[0].Coordinates[i];
+                      if(element.duration)
+                        return [coord, element.duration.value]
+                      else return [coord, -1]
                     })
-                    redrawGraphicsLayer(coords);
+                    var filtered = coords.filter(c => c[1] != -1)
+                    redrawGraphicsLayer(filtered);
                 });
               }
             )
