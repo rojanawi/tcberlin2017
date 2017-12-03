@@ -40,11 +40,12 @@ define('MapSquare',[
 ], function(SimpleFillSymbol, Color, Polygon, Graphic) {
     return function(position, travelTime, stepSize, minTravelTime, maxTravelTime){
       var n = Math.min(100*travelTime/maxTravelTime, 100)
-      var squareColor = new Color([Math.round((255 * n) / 100),Math.round((255 * (100 - n)) / 100),0])
+      var squareColor = new Color([Math.round((255 * n) / 100),Math.round((255 * (100 - n)) / 100),0,0.2])
       var square = new Polygon([[position[0]+stepSize,position[1]+stepSize],[position[0]+stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]-stepSize],[position[0]-stepSize,position[1]+stepSize]]);
       var symbol = new SimpleFillSymbol();
       symbol.setStyle(SimpleFillSymbol.STYLE_SOLID);
       symbol.setColor(squareColor);
+      symbol.setOutline(null);
       return new Graphic(square, symbol)
 }});
 
