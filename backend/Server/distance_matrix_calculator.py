@@ -46,6 +46,7 @@ def calculate_multiple_tuples():
 	lng = 0.0
 
 	coords = parameters['coords']
+	transportationMode = parameters['transportationMode']
 
 	for latlng in coords: 
 		lat += latlng['latitude']
@@ -59,7 +60,13 @@ def calculate_multiple_tuples():
 	gridSize=(-1,1)
 	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1]) for j in range(gridSize[0],gridSize[1])]
 	
-	#distance_matrix=gmaps.distance_matrix(centerTuple, Matrix, mode=request.args.get('transportation_mode'))
-	
-	Matrix = {'Coordinates': Matrix}
-	return jsonify(Matrix,distance_matrix)
+	#distance_matrix=gmaps.distance_matrix(centerTuple, Matrix, mode=transportationMode)
+	center = {'lat': lat, 'lng': lng}
+	distance_matrix = center
+
+	ret = {
+		'coordinates': Matrix,
+		'center': center,
+		'distanceMatrix': distance_matrix,
+	}
+	return jsonify(ret)
