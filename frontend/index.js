@@ -70,7 +70,7 @@ define('RedrawGraphicsLayer', ["MapSquare"], function(MapSquare) {
                     MapSquare(coords, travelTime, stepSize/2, minTravelTime, maxTravelTime))
             });
             this.graphicsLayer.redraw();
-        }    
+        }
     }
 
     return RedrawGraphicsLayer;
@@ -79,7 +79,7 @@ define('RedrawGraphicsLayer', ["MapSquare"], function(MapSquare) {
 define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
  function(RedrawGraphicsLayer) {
     var stepSize = STEP_SIZE;
-    
+
     ComputeDistanceCostMatrix = function(graphicsLayer) {
         this.graphicsLayer = graphicsLayer;
         this.redrawGraphicsLayer= new RedrawGraphicsLayer(graphicsLayer);
@@ -89,7 +89,7 @@ define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
         compute: function(coordinates) {
             console.dir("calling the api with coords, ma" + coordinates);
             var url = THE_SERVER_API + '?' + qs(coordinates);
-            
+
             var self = this;
 
             fetch(url, coordinates).then(function(response) {
@@ -101,12 +101,13 @@ define('ComputeDistanceCostMatrix', [ "RedrawGraphicsLayer" ],
                 response.json().then(function(data) {
                     var coords = data[1].rows[0].elements.map(function(element, i) {
                         var coord = [data[0].Coordinates[i][1], data[0].Coordinates[i][0]];
-                        if(element.duration)
-                            return [coord, element.duration.value]
-                        else
-                            return [coord, -1]
+                        var totalDuration = data[1].rows.reduce(function(acc,row) {
+                          if(row.elements[i].duration && acc != -1) return acc + row.elements[i].duration.value
+                          else return -1
+                        }, 0);
+                        return [coord, totalDuration]
                     })
-                    var filtered = coords.filter(function(c) { 
+                    var filtered = coords.filter(function(c) {
                         return c[1] != -1;
                     })
                     self.redrawGraphicsLayer.redraw(filtered);
@@ -144,24 +145,20 @@ define('AppMap', [
         map.on('click',function(evt) {
 
             var lnglat = webMercatorUtils.xyToLngLat(evt.mapPoint.x, evt.mapPoint.y);
-            
-            if (evt.graphic){
+
+            if (evt.graphic && evt.graphic.geometry.type == "point"){
                 poiLayer.remove(evt.graphic)
             } else {
                 var mapPoint = evt.mapPoint;
                 var graphic = new Graphic(mapPoint, MapSymbol);
                 poiLayer.add(graphic);
             }
-            
-            var poiCoordinates = poiLayer.graphics.map(function(poiGraphic) {		
+
+            var poiCoordinates = poiLayer.graphics.map(function(poiGraphic) {
                 var coords = webMercatorUtils.xyToLngLat(poiGraphic.geometry.x, poiGraphic.geometry.y);
-                return { latitude: coords[1], longitude: coords[0] }		
+                return { latitude: coords[1], longitude: coords[0] }
             });
 
-            /*var poiCoordinates = poiLayer.graphics.map(function(poiGraphic) {
-              return { latitude: coords[1], longitude: coords[0] }
-            });*/
-            
             computeMatrix.compute({latitude: lnglat[1], longitude:lnglat[0]});
         });
         return map;
