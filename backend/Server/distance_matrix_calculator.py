@@ -69,7 +69,7 @@ def calculate_multiple_tuples():
 
 	max_distance = max(horizontal_distance, vertical_distance)
 
-	gridSize=(-2,2)
+	gridSize=(-1,1)
 
 	nb_steps = gridSize[1]-gridSize[0]
 	step = max_distance / nb_steps
@@ -89,7 +89,7 @@ def calculate_multiple_tuples():
 
 
 	# step=0.01
-	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1]) for j in range(gridSize[0],gridSize[1])]
+	Matrix = [(centerTuple[0]+i*step,centerTuple[1]+j*step) for i in range(gridSize[0], gridSize[1] +1 ) for j in range(gridSize[0],gridSize[1] + 1)]
 
 	center = {'lat': lat, 'lng': lng}
 
