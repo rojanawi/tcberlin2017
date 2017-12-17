@@ -9,8 +9,7 @@ import googlemaps
 #import arcgis.network as network
 from ast import literal_eval
 from pprint import pprint 
-gmaps = googlemaps.Client(key='AIzaSyA2eFpbH0vjcilxHTCx0l0dUYTKqJwwgZ4')
-#gis = GIS("https://www.arcgis.com", "nirsoffer", "fuckthisshit12")
+gmaps = googlemaps.Client(key='KEYKEYKEYKEYKEY')
 
 @app.route('/calculate', methods=['POST', 'GET'])
 def generate_tuples():
